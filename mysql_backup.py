@@ -33,7 +33,7 @@ parser.add_argument('--rescan','-r',action="store_true",help="Перескани
 parser.add_argument('--host',type=str,default='127.0.0.1',help="IP хоста сервера БД MySQL")
 parser.add_argument('--user','-u', type=str, default='root', help="Пользователь сервера БД MySQL."
                                                                   " По умолчанию 'root'")
-parser.add_argument('--password','-pass', type=str, default='root', help="Пароль пользователя сервера БД MySQL. "
+parser.add_argument('--password','-p', type=str, default='root', help="Пароль пользователя сервера БД MySQL. "
                                                                          "По умолчанию 'root'")
 options = vars(parser.parse_args())
 USER = str(options['user'])
