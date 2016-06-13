@@ -13,11 +13,14 @@
 # Email: dmitriiv84@gmail.com
 #
 #***********************************************************************************************************************
-import time
-import pymysql
-import os
 import argparse
+import os
+import shutil
 import sys
+import tarfile
+import time
+
+import pymysql
 
 CURR_DATE = time.strftime('%d-%m-%Y')
 if sys.platform == 'linux':
@@ -26,8 +29,14 @@ elif sys.platform == 'win32':
     DUMP_PATH = "C:\\MySQL_Backup\\"
 DATABASES = 'db_list' # Файл с названиями БД
 
+
+def make_tarfile(output_filename, source_dir):
+    with tarfile.open(output_filename, "w:gz") as tar:
+        tar.add(source_dir, arcname=os.path.basename(source_dir))
+
 # Подключение и настройка парсера аргментов коммандной строки
-parser = argparse.ArgumentParser(description="Простой скрипт резервного копирования MySQL баз данных")
+parser = argparse.ArgumentParser(description="Простой скрипт резервного копирования MySQL баз данных",
+                                 usage='mysql_backup [-r, --rescan] [--host] [-u, --user][-p, --password]')
 parser.add_argument('--rescan','-r',action="store_true",help="Пересканировать список БД, старый файл будет перезаписан",
                     default=False)
 parser.add_argument('--host',type=str,default='127.0.0.1',help="IP хоста сервера БД MySQL")
@@ -66,7 +75,7 @@ if RESCAN:   # Усли указан аргумент -r или --rescan
         db_list.append(db_name)
     cur.close()
     f.close()
-elif not RESCAN: # Если не указан -r или --resccan
+elif not RESCAN:  # Если не указан -r или --rescan
     if os.path.isfile(DUMP_PATH + DATABASES):
         f = open(DUMP_PATH + DATABASES)
         databases = f.read()
@@ -80,6 +89,8 @@ for i in db_list:
     os.system("mysqldump -u" + USER + " -p" + PASS + " --skip-lock-tables " + " " + i + " > " + DUMP_PATH + CURR_DATE +
               "/" + i + ".sql")
 conn.close()
+make_tarfile(DUMP_PATH + CURR_DATE + '.tar.gz', DUMP_PATH + CURR_DATE)
+shutil.rmtree(DUMP_PATH + CURR_DATE)
 print ("Бэкап закончен")
 print ("Бэкап создан в  '" + DUMP_PATH + CURR_DATE + "' директории")
 input('Для продолжения нажмите Enter')
